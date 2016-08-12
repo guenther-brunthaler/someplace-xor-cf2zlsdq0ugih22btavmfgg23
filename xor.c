@@ -1,3 +1,19 @@
+/* Yes! This is about the most primitive utility one can imgine. However, for
+ * some reason, nobody seemed to care to implement it. So I did. It depends
+ * only on the C standard run-time library, of course.
+ *
+ * The utility is useful for inverting monochromatic bitmap images, for
+ * implementing on-time pad (OTP) encryption schemes, for combining split
+ * cryptographic keys back into a single key, for calculating parity of
+ * striped data, and many more possible applications.
+ *
+ * xor Version 2016.225
+ *
+ * Copyright (c) 2016 Guenther Brunthaler. All rights reserved.
+ *
+ * This source file is free software.
+ * Distribution is permitted under the terms of the GPLv3. */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -18,9 +34,12 @@ int main(int argc, char **argv) {
          ++argind;
       }
       if (argind + 1 != argc) {
+         bad_argument_count:
          error=
             "Exactly one argument is required: The name of a binary file to"
-            " bitwise XOR with binary stdin, yielding binary stdout."
+            " bitwise XOR with binary data read from the standard input"
+            " stream. (The binary result of the operation will be written to"
+            " the standard output stream)."
          ;
          goto complain;
       }
@@ -30,6 +49,8 @@ int main(int argc, char **argv) {
          );
          goto cleanup;
       }
+   } else {
+      goto bad_argument_count;
    }
    {
       int c;
@@ -51,8 +72,8 @@ int main(int argc, char **argv) {
             );
             goto cleanup;
          }
-         assert((unsigned char)c <= UCHAR_MAX);
-         assert((unsigned char)co <= UCHAR_MAX);
+         assert((unsigned)c <= UCHAR_MAX);
+         assert((unsigned)co <= UCHAR_MAX);
          c^= co;
          if (putchar(c) != c) {
             error= "Error writing to standard output stream!";
@@ -65,7 +86,6 @@ int main(int argc, char **argv) {
       }
    }
    if (fflush(0)) {
-      write_error:
       error= "Write error!";
       complain:
       (void)fprintf(stderr, "%s\n", error);
