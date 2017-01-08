@@ -1,4 +1,4 @@
-TARGETS = xor or 0pad-blob
+TARGETS = xor or 0pad
 
 all: $(TARGETS)
 
