@@ -56,9 +56,8 @@ static int atoseekoff(seekoff_t *off, char const *s) {
    seekoff_t limb;
    if (hex= starts_with(s, "0x") || starts_with(s, "0X")) s+= 2;
    if (!*s) fail: return 0;
-   off->full_longs= 0u;
+   off->full_longs= limb.full_longs= 0u;
    off->last_rem= 0l;
-   limb.full_longs= 0u;
    do {
       unsigned digit;
       {
@@ -119,7 +118,10 @@ int main(int argc, char **argv) {
          ;
          goto complain;
       }
-      if (!(file= fopen(fname= argv[argind++], "w+b"))) {
+      if (
+            !(file= fopen(fname= argv[argind++], "r+b"))
+         && !(file= fopen(fname, "w+b"))
+      ) {
          (void)fprintf(
             stderr, error= "Could not open '%s' for writing!\n", fname
          );
@@ -134,12 +136,28 @@ int main(int argc, char **argv) {
    } else {
       goto bad_argument_count;
    }
-   (void)seekto;
-   (void)printf(
-         "off fulls: %u (%#x) + rest %ld (%#lx)\n"
-      ,  off.full_longs, off.full_longs
-      ,  off.last_rem, off.last_rem
-   );
+   if (off.last_rem || off.full_longs) {
+      /* --off; */
+      if (off.last_rem) {
+         --off.last_rem;
+      } else {
+         assert(off.full_longs > 0);
+         --off.full_longs;
+         off.last_rem= LONG_MAX - 1;
+      }
+      if (!seekto(file, &off)) {
+         bad_seek: error= "Seek error!";
+         goto complain;
+      }
+      if (fgetc(file) == EOF) {
+         clearerr(file);
+         if (!seekto(file, &off)) goto bad_seek;
+         if (fputc(0, file) != 0 || fflush(file)) {
+            error= "Could not grow file to the specified size!";
+            goto complain;
+         }
+      }
+   }
    if (fflush(0)) {
       error= "Write error!";
       complain:
