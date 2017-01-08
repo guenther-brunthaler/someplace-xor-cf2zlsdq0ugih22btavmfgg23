@@ -1,4 +1,4 @@
-TARGETS = xor
+TARGETS = xor or
 
 all: $(TARGETS)
 
@@ -7,7 +7,7 @@ all: $(TARGETS)
 clean:
 	-rm $(TARGETS)
 
-AUG_CFLAGS = $(CPPFLAGS) $(CFLAGS)
+AUG_CFLAGS = $(CPPFLAGS) $(CFLAGS) -I .
 
 .c:
 	$(CC) $(AUG_CFLAGS) $(LDFLAGS) -o $@ $<
