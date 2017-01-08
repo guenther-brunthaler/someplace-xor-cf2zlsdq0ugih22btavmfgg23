@@ -1,4 +1,4 @@
-TARGETS = xor or 0pad
+TARGETS = xor or nor 0pad
 
 all: $(TARGETS)
 

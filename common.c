@@ -7,7 +7,7 @@
  * cryptographic keys back into a single key, for calculating parity of
  * striped data, and many more possible applications.
  *
- * Version 2017.8
+ * Version 2017.8.1
  *
  * Copyright (c) 2016 Guenther Brunthaler. All rights reserved.
  *
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
          }
          assert((unsigned)c <= UCHAR_MAX);
          assert((unsigned)co <= UCHAR_MAX);
-         c OP_EQ co;
+         OP_EQ(c, co);
          if (putchar(c) != c) {
             error= "Error writing to standard output stream!";
             goto complain;
