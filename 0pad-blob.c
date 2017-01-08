@@ -26,14 +26,19 @@ static int starts_with(char const *whole, char const *prefix) {
 }
 
 static int seekoff_add(seekoff_t *dst, seekoff_t const *src) {
-   unsigned carry, old;
-   if (carry= (dst->last_rem+= src->last_rem) < 0) {
-      dst->last_rem&= LONG_MAX;
+   {
+      unsigned old= dst->full_longs;
+      if ((dst->full_longs+= src->full_longs) < old) goto fail;
    }
-   old= dst->full_longs;
-   if ((dst->full_longs+= carry) < old) fail: return 0;
-   old= dst->full_longs;
-   if ((dst->full_longs+= src->full_longs) < old) goto fail;
+   {
+      long last;
+      if ((last= dst->last_rem + src->last_rem) < 0 || last == LONG_MAX) {
+         last-= LONG_MAX;
+         assert(last < LONG_MAX);
+         if (++dst->full_longs == 0) fail: return 0;
+      }
+      dst->last_rem= last;
+   }
    return 1;
 }
 
