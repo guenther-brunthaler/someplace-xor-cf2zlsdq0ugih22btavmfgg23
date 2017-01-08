@@ -7,7 +7,7 @@
  * cryptographic keys back into a single key, for calculating parity of
  * striped data, and many more possible applications.
  *
- * Version 2016.225
+ * Version 2017.8
  *
  * Copyright (c) 2016 Guenther Brunthaler. All rights reserved.
  *
