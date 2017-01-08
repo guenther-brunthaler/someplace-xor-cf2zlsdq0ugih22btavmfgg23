@@ -30,7 +30,8 @@ static int seekoff_add(seekoff_t *dst, seekoff_t const *src) {
    if (carry= (dst->last_rem+= src->last_rem) < 0) {
       dst->last_rem&= LONG_MAX;
    }
-   if ((dst->full_longs+= carry) == 0) fail: return 0;
+   old= dst->full_longs;
+   if ((dst->full_longs+= carry) < old) fail: return 0;
    old= dst->full_longs;
    if ((dst->full_longs+= src->full_longs) < old) goto fail;
    return 1;
@@ -42,7 +43,7 @@ static int times2(seekoff_t *off) {
 
 static int times5(seekoff_t *off) {
    seekoff_t copy= *off;
-   return times2(off) && seekoff_add(off, &copy);
+   return times2(off) && times2(off) && seekoff_add(off, &copy);
 }
 
 static int atoseekoff(seekoff_t *off, char const *s) {
@@ -68,7 +69,7 @@ static int atoseekoff(seekoff_t *off, char const *s) {
       if (digit >= 10 && !hex) goto fail;
       if (hex) {
          /* off*= 16 / 2; */
-         if (!times2(off) || !times2(off) || times2(off)) goto fail;
+         if (!times2(off) || !times2(off) || !times2(off)) goto fail;
       } else {
          /* off*= 10 / 2; */
          if (!times5(off)) goto fail;
