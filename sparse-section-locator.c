@@ -3,7 +3,7 @@
  * input, and write the decimal starting offsets and lengths of the sections
  * to standard output.
  *
- * Version 2017.13
+ * Version 2017.14
  *
  * Copyright (c) 2017 Guenther Brunthaler. All rights reserved.
  *
@@ -53,8 +53,6 @@ int main(int argc, char **argv) {
          ;
          goto complain;
       }
-   } else if (argc != 1) {
-      goto bad_argument_count;
    }
    {
       int c;
