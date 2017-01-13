@@ -2,6 +2,7 @@ TARGETS = \
 	0pad \
 	nor \
 	or \
+	sparse-antisection-locator \
 	sparse-section-locator \
 	xor \
 
