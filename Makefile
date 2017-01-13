@@ -1,4 +1,9 @@
-TARGETS = xor or nor 0pad
+TARGETS = \
+	0pad \
+	nor \
+	or \
+	sparse-section-detector \
+	xor \
 
 all: $(TARGETS)
 
