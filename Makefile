@@ -2,7 +2,7 @@ TARGETS = \
 	0pad \
 	nor \
 	or \
-	sparse-section-detector \
+	sparse-section-locator \
 	xor \
 
 all: $(TARGETS)
