@@ -1,8 +1,7 @@
 /* Detect sparse sections consisting of runs of at least
  * MINIMUM_ZEROS_FOR_SPARSENESS zero bytes within the file read from standard
  * input, and write the decimal starting offsets and lengths of the sections
- * to standard output in the format "@offset+length" (sorted by offset) to
- * standard output.
+ * to standard output.
  *
  * Version 2017.13
  *
@@ -18,12 +17,15 @@
 #include <string.h>
 
 /* Let it be larger than any normal native simple variable. */
-#define MINIMUM_ZEROS_FOR_SPARSENESS 64
-#define N2STR(x) #x
+#define MINIMUM_ZEROES_FOR_SPARSENESS 64
+
+#define N2STR0(x) #x
+#define N2STR(x) N2STR0(x)
+#define ZRUN_SIZE N2STR(MINIMUM_ZEROES_FOR_SPARSENESS)
 
 static char const *finish_range(unsigned long offset, unsigned long zeroes) {
-   if (zeroes >= MINIMUM_ZEROS_FOR_SPARSENESS) {
-      if (printf("@%lu+%lu\n", offset - zeroes, zeroes) <= 0) {
+   if (zeroes >= MINIMUM_ZEROES_FOR_SPARSENESS) {
+      if (printf("%lu + %lu = %lu\n", offset - zeroes, zeroes, offset) <= 0) {
          return "Error writing to standard output stream!";
       }
    }
@@ -46,13 +48,12 @@ int main(int argc, char **argv) {
          bad_argument_count:
          error=
             "No argument must be specified: The binary file to be examined"
-            " for sparse sections (runs of"
-            " " N2STR(MINIMUM_ZEROS_FOR_SPARSENESS) " or more zero bytes) will"
-            " be read from the standard input stream."
+            " for sparse sections (runs of " ZRUN_SIZE " or more zero bytes)"
+            " will be read from the standard input stream."
          ;
          goto complain;
       }
-   } else {
+   } else if (argc != 1) {
       goto bad_argument_count;
    }
    {
