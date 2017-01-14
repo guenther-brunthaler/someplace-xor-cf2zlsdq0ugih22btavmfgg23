@@ -25,20 +25,37 @@
 #define ZRUN_SIZE N2STR(MINIMUM_ZEROES_FOR_SPARSENESS)
 
 struct state {
-   unsigned long offset, zeroes;
+   unsigned long start, offset, zeroes;
    unsigned sum_low, sum_high;
 };
 
 static char const *finish_range(struct state *s) {
    if (s->zeroes >= MINIMUM_ZEROES_FOR_SPARSENESS) {
+      /* Delayed zeroes are part of a sparse section. Report
+       * attributes of the non-sparse section preceding it. */
       if (
          printf(
-            "%lu + %lu = %lu\n", s->offset - s->zeroes, s->zeroes, s->offset
+               "%lu + %lu = %lu CHK %u\n"
+            ,  s->start, s->offset - s->zeroes - s->start
+            ,  s->offset - s->zeroes, s->sum_high << 8 | s->sum_low
          ) <= 0
       ) {
          return "Error writing to standard output stream!";
       }
+      s->zeroes= 0;
+      s->sum_low= s->sum_high= 0; /* Start a new checksum. */
+      s->start= s->offset;
+   } else {
+      /* Too few delayed zeroes for sparseness. Include them
+       * in the checksum as normal data. */
+      assert(s->zeroes >= 1);
+      do {
+         /* <sum_low> won't change by adding zero values. */
+         if ((s->sum_high+= s->sum_low) >= 255) s->sum_high-= 255;
+         assert(s->sum_high < 255);
+      } while (--s->zeroes);
    }
+   assert(s->zeroes == 0);
    return 0;
 }
 
@@ -70,13 +87,19 @@ int main(int argc, char **argv) {
    {
       int c;
       struct state s;
-      s.offset= s.zeroes= s.sum_low= s.sum_high= 0;
+      s.start= s.offset= s.zeroes= s.sum_low= s.sum_high= 0;
       while ((c= getchar()) != EOF) {
          if (c) {
+            /* Not a sparse byte. */
             if (s.zeroes) {
+               /* Process delayed zeroes. */
                if (error= finish_range(&s)) goto complain;
-               s.zeroes= 0;
             }
+            /* Add the nonzero byte just read to the running sum. */
+            if ((s.sum_low+= c) >= 255) s.sum_low-= 255;
+            assert(s.sum_low < 255);
+            if ((s.sum_high+= s.sum_low) >= 255) s.sum_high-= 255;
+            assert(s.sum_high < 255);
          } else {
             ++s.zeroes;
          }
@@ -86,7 +109,10 @@ int main(int argc, char **argv) {
          error= "Error reading from standard input stream!";
          goto complain;
       }
-      if (error= finish_range(&s)) goto complain;
+      if (s.zeroes) if (error= finish_range(&s)) goto complain;
+      assert(s.zeroes == 0);
+      if (s.start != s.offset) if (error= finish_range(&s)) goto complain;
+      assert(s.start == s.offset);
    }
    if (fflush(0)) {
       error= "Write error!";
